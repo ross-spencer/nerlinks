@@ -29,24 +29,41 @@ const NER_INDEX_VALUE = "index"
 var all_ner_values []map[string]interface{}
 var ner_keys_values map[string]interface{}
 
+//struct to return to other classes
+type EntityData struct {
+   etype       string
+   evalue      string
+   efile       FileData
+}
+
+type FileData struct {
+   fname string
+   ecount int
+}
+
+//list to store the structs
+var entity_list []EntityData
+
 //getNERData is used to build the data we're going to use per
 //file given the system. 
-func getNERData (content string, fname string) {
+func getNERData (content string, fname string) []EntityData {
    preprocessed := nerPreprocess(content)
    resp := makeNERDataConnection(POST, ner_extract, preprocessed)
    readNERJson(resp, "")
-   groupNERData()
+   groupNERData(fname)
+   return entity_list
 }
 
+//pre-process lines of the output as some characters make it
+//harder such as newlines where it interferes with word boundaries
 func nerPreprocess (content string) string {
-   //newlines
-   return strings.Replace(content, "\n", ", ", -1)
+   //replace newlines
+   return strings.Replace(content, "\n", ", ", -1)  //TODO: improve handling further down code
 }
 
-func groupNERData() {
-
-   //we're grouping split values to make whole names
-   var indexes []float64   //scope for this var is important...
+//group NER data for faceting... 
+func groupNERData(fname string) {
+   var indexes []float64
    for k, _ := range all_ner_values {
       if k+1 < len(all_ner_values) {
          combine := true
@@ -60,14 +77,14 @@ func groupNERData() {
                name2 := all_ner_values[k+1][NER_TEXT_VALUE].(string)
                idx1 := all_ner_values[k][NER_INDEX_VALUE].(float64)
                idx2 := all_ner_values[k+1][NER_INDEX_VALUE].(float64)
-               indexes = ExtendIntSlice(indexes, idx1)
-               indexes = ExtendIntSlice(indexes, idx2)
+               indexes = ExtendFloatSlice(indexes, idx1)
+               indexes = ExtendFloatSlice(indexes, idx2)
                value = value + name1 + " " + name2
                nertype = all_ner_values[k][NER_PATTERN_TYPE].(string)
                k = k+1
             } else {
                if value != "" {
-                  fmt.Println(nertype, value)
+                  addEntity(nertype, value, fname)
                   break
                } else {
                   idx := false
@@ -79,8 +96,10 @@ func groupNERData() {
                         idx = true
                      }
                   }
+                  t1 := all_ner_values[k][NER_PATTERN_TYPE].(string)
+                  v1 := all_ner_values[k][NER_TEXT_VALUE].(string)
                   if idx == false { 
-                     fmt.Println(all_ner_values[k][NER_PATTERN_TYPE], all_ner_values[k][NER_TEXT_VALUE])
+                     addEntity(t1, v1, fname)
                   }
                }
                combine = false
@@ -88,7 +107,46 @@ func groupNERData() {
          }
       }
    }
+}
 
+//add entity to global entity list as we require
+func addEntity (etype string, evalue string, fname string) {
+   edata := initEntity(etype, evalue, fname)
+   if len(entity_list) == 0 {
+      entity_list = ExtendEntitySlice(entity_list, edata)
+      return 
+   } else {
+      //see if this is a duplicate and handle accordingly
+      for k, v := range entity_list {
+         if etype == v.etype && evalue == v.evalue {
+            //duplicate increment count
+            edata = v
+            edata.efile.ecount = edata.efile.ecount + 1
+            entity_list = deleteEntity(entity_list, k)
+            entity_list = ExtendEntitySlice(entity_list, edata)
+            return
+         } 
+      }
+      entity_list = ExtendEntitySlice(entity_list, edata) 
+      return 
+   }
+}
+
+//delete entity from the slice so we can update dynamically
+func deleteEntity(list []EntityData, index int) []EntityData {
+   list[index] = list[len(list)-1] 
+   list = list[:len(list)-1]
+   return list
+}
+
+//initialize an entity structure
+func initEntity(etype string, evalue string, fname string) EntityData {
+   var edata EntityData
+   edata.etype = etype
+   edata.evalue = evalue
+   edata.efile.fname = fname
+   edata.efile.ecount = 1
+   return edata
 }
 
 //readNERJson processes the JSON output by the Standord NER
@@ -122,7 +180,7 @@ func readNERJson (output string, key string) {
       if ner {
          for _, v := range ALL_ENTITIES {
             if nermap[NER_PATTERN_TYPE] == v {
-               all_ner_values = Extend(all_ner_values, nermap)
+               all_ner_values = ExtendJSONSlice(all_ner_values, nermap)
                break
             } else {
                //we can take a look at what other values NER has picked up
@@ -149,7 +207,7 @@ func getNERKeys (nermap map[string]interface{}, mdkeys *[]string, needle string)
 
 //Extend allows us to arbitrarily extend slices containing named entity
 //recognition information.
-func Extend(slice []map[string]interface{}, element map[string]interface{}) ([]map[string]interface{}) {
+func ExtendJSONSlice(slice []map[string]interface{}, element map[string]interface{}) ([]map[string]interface{}) {
    n := len(slice)
    if n == cap(slice) {
       // Slice is full; must grow.kb
@@ -163,12 +221,26 @@ func Extend(slice []map[string]interface{}, element map[string]interface{}) ([]m
    return slice
 }
 
-func ExtendIntSlice(slice []float64, element float64) []float64 {
+func ExtendFloatSlice(slice []float64, element float64) []float64 {
    n := len(slice)
    if n == cap(slice) {
       // Slice is full; must grow.kb
       // We double its size and add 1, so if the size is zero we still grow.
       newSlice := make([]float64, len(slice), 2*len(slice)+1)
+      copy(newSlice, slice)
+      slice = newSlice
+   }
+   slice = slice[0 : n+1]
+   slice[n] = element
+   return slice
+}
+
+func ExtendEntitySlice(slice []EntityData, element EntityData) []EntityData {
+   n := len(slice)
+   if n == cap(slice) {
+      // Slice is full; must grow.kb
+      // We double its size and add 1, so if the size is zero we still grow.
+      newSlice := make([]EntityData, len(slice), 2*len(slice)+1)
       copy(newSlice, slice)
       slice = newSlice
    }
