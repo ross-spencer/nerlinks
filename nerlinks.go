@@ -54,7 +54,10 @@ func readFile (path string, fi os.FileInfo, err error) error {
       fmt.Println()
 
 
-      content := getFileContent(fp, fi)     
+      content, err := getFileContent(fp, fi)
+      if err != nil {
+         return err
+      }     
       getEntityData(content, fi.Name()) 
    case mode.IsDir():
       fmt.Fprintln(os.Stderr, "INFO:", fi.Name(), "is a directory.")      
