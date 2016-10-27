@@ -87,7 +87,6 @@ func groupNERData(fname string) {
 
                if k+1 < len(all_ner_values)-1 {                  
                   k = k+1
-                  fmt.Println(k)
                } else {
                   break
                }
