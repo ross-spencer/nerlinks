@@ -1,8 +1,8 @@
 package main 
 
 import (
-   "os"
-   "fmt"
+   //"os"
+   //"fmt"
    "strings"
    "encoding/json"
 )
@@ -47,6 +47,8 @@ var entity_list []EntityData
 //getNERData is used to build the data we're going to use per
 //file given the system. 
 func getNERData (content string, fname string) []EntityData {
+   entity_list = nil
+   all_ner_values = nil
    preprocessed := nerPreprocess(content)
    resp := makeNERDataConnection(POST, ner_extract, preprocessed)
    readNERJson(resp, "")
@@ -187,7 +189,7 @@ func readNERJson (output string, key string) {
    for _, v := range json_strings {
       var nermap map[string]interface{}
       if err := json.Unmarshal([]byte(v), &nermap); err != nil {
-         fmt.Fprintf(os.Stderr, "Ignoring Line ERROR: Handling NER JSON: %v \"%v\"\n", err, v)
+         //fmt.Fprintf(os.Stderr, "Ignoring Line ERROR: Handling NER JSON: %v \"%v\"\n", err, v)
          continue
       }
       ner := getNERKeys(nermap, &mdkeys, NER_PATTERN_TYPE) 

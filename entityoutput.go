@@ -8,19 +8,15 @@ import (
 var all_list []EntityData
 
 func collateEntities(edat []EntityData) {
-   fmt.Println("Collating statistics.")
+   fmt.Println("Collating statistics.", len(edat))
    for _, v := range edat {
       all_list = ExtendEntitySlice(all_list, v)
    }
 }
 
 func allentityhandler() {
-   fmt.Println()
-   fmt.Println("rrrrrrrrrrrrrrr", len(all_list))
-   fmt.Println()
-   fmt.Println()
    for _, v := range all_list {
-      fmt.Println(v.efile.fname)
+      fmt.Println(v.efile.fname, v.etype, v.evalue, v.efile.ecount)
    }
    
 }

@@ -11,9 +11,10 @@ func readFile (path string, fi os.FileInfo, err error) error {
    fp := openFile(path)
    switch mode := fi.Mode(); {
    case mode.IsRegular():
+      fmt.Println(fi.Name())
       content, err := getFileContent(fp, fi)
       if err != nil {
-         return err
+         fmt.Fprintln(os.Stderr, "INFO:", fi.Name(), "cannot be handled by Tika.")
       }     
       edat := getEntityData(content, fi.Name()) 
       collateEntities(edat)
