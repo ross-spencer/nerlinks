@@ -48,6 +48,12 @@ func readFile (path string, fi os.FileInfo, err error) error {
    fp := openFile(path)
    switch mode := fi.Mode(); {
    case mode.IsRegular():
+
+      fmt.Println()
+      fmt.Println(fi.Name())
+      fmt.Println()
+
+
       content := getFileContent(fp, fi)     
       getEntityData(content, fi.Name()) 
    case mode.IsDir():

@@ -72,6 +72,9 @@ func groupNERData(fname string) {
          for combine == true {
             val1 := all_ner_values[k][NER_CHAR_OFF_END].(float64)
             val2 := all_ner_values[k+1][NER_CHAR_OFF_BEGIN].(float64)
+
+
+
             if (val1 + 1) == val2 {
                name1 := all_ner_values[k][NER_TEXT_VALUE].(string)
                name2 := all_ner_values[k+1][NER_TEXT_VALUE].(string)
@@ -104,6 +107,11 @@ func groupNERData(fname string) {
                }
                combine = false
             }
+
+
+
+
+
          }
       }
    }
