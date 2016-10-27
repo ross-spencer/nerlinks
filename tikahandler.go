@@ -31,33 +31,35 @@ func getTikaMetadataPOST (fname string, fp *os.File, accepttype string) {
    readTikaMetadataJson(resp, "", &fl_keys_values, &fl_available_md_keys)
 }
 
-func getTikaRecursive (fname string, fp *os.File, accepttype string) {
+func getTikaRecursive (fname string, fp *os.File, accepttype string) error {
    fp.Seek(0,0)
    resp := makeMultipartConnection(POST, tika_path_meta_recursive, fp, fname, accepttype) 
    trimmed := strings.Trim(resp, "[ ]")
-   readTikaMetadataJson(trimmed, "", &fl_recursive_keys_values, &fl_recursive_md_keys)
+   err := readTikaMetadataJson(trimmed, "", &fl_recursive_keys_values, &fl_recursive_md_keys)
+   return err
 }
 
-func readTikaMetadataJson (output string, key string, kv *map[string]interface{}, mdkeys *[]string) {
-
-   //we can get multiple JSON sets from TIKA
-   json_strings := strings.Split(output, "},")
-
-   for k, v := range json_strings {
-      last := v[len(v)-1:]
-      if last != "}" {
-         json_strings[k] = v + "}"
+func readTikaMetadataJson (output string, key string, kv *map[string]interface{}, mdkeys *[]string) error {
+   if output != "" {
+      //we can get multiple JSON sets from TIKA
+      json_strings := strings.Split(output, "},")
+      for k, v := range json_strings {
+         last := v[len(v)-1:]
+         if last != "}" {
+            json_strings[k] = v + "}"
+         }
       }
-   }
-
-	var tikamap map[string]interface{}
-
-   for _, v := range json_strings {
-	   if err := json.Unmarshal([]byte(v), &tikamap); err != nil {
-		   fmt.Fprintln(os.Stderr, "ERROR: Handling TIKA JSON,", err)
-	   }
-	   *kv = tikamap
-	   getTikaKeys(tikamap, mdkeys) 
+	   var tikamap map[string]interface{}
+      for _, v := range json_strings {
+	      if err := json.Unmarshal([]byte(v), &tikamap); err != nil {
+		      fmt.Fprintln(os.Stderr, "ERROR: Handling TIKA JSON,", err)
+	      }
+	      *kv = tikamap
+	      getTikaKeys(tikamap, mdkeys) 
+      }
+      return nil
+   } else {
+      return fmt.Errorf("Response data is a nil string.")
    }
 } 
 
