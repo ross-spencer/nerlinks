@@ -25,9 +25,7 @@ func openFile (path string) *os.File {
 }
 
 func main() {
-
    flag.Parse()
-
    if flag.NFlag() <= 0 {    // can access args w/ len(os.Args[1:]) too
       fmt.Fprintln(os.Stderr, "Usage:  links [-file ...]")
       fmt.Fprintln(os.Stderr, "               [Optional -version]")
@@ -35,13 +33,11 @@ func main() {
       flag.Usage()
       os.Exit(0)
    }
-
    if vers {
       fmt.Fprintln(os.Stdout, getVersion())
       os.Exit(1)
    }
-
    findOpenConnections()
-
    filepath.Walk(file, readFile)
+   allentityhandler()
 }

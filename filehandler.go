@@ -11,17 +11,12 @@ func readFile (path string, fi os.FileInfo, err error) error {
    fp := openFile(path)
    switch mode := fi.Mode(); {
    case mode.IsRegular():
-
-      fmt.Println()
-      fmt.Println(fi.Name())
-      fmt.Println()
-
-
       content, err := getFileContent(fp, fi)
       if err != nil {
          return err
       }     
-      getEntityData(content, fi.Name()) 
+      edat := getEntityData(content, fi.Name()) 
+      collateEntities(edat)
    case mode.IsDir():
       fmt.Fprintln(os.Stderr, "INFO:", fi.Name(), "is a directory.")      
    default: 
