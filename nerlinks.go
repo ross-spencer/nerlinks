@@ -4,6 +4,7 @@ import (
   	"os"
 	"fmt"
    "flag"
+   "time"
    "path/filepath"
 )
 
@@ -37,8 +38,12 @@ func main() {
       fmt.Fprintln(os.Stdout, getVersion())
       os.Exit(1)
    }
+
    findOpenConnections()
+   start := time.Now()
    filepath.Walk(file, readFile)
    allentityhandler()
+   elapsed := time.Since(start)
+   fmt.Printf("\nNamed entity analysis took %s\n", elapsed)
    responsehandler()
 }
