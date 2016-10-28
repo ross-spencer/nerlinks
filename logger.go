@@ -16,6 +16,10 @@ func logNERError(e error, s string) {
    log.Println(s)
 }
 
+func logStringError(message string, e error) {
+   log.Printf(message + "\n", e)
+}
+
 func logIntMessage(message string, count int) {
    log.Printf(message + "\n", count)
 }   

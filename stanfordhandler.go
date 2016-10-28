@@ -1,7 +1,6 @@
 package main 
 
 import (
-   "fmt"
    "strings"
    "encoding/json"
 )
@@ -167,56 +166,66 @@ func initEntity(etype string, evalue string, fname string) EntityData {
 //readNERJson processes the JSON output by the Standord NER
 //extractor. 
 func readNERJson (output string, key string) {
-
    //value to hold the keys we extract
    var mdkeys []string
-   json_strings := preProcessNERJson(output)   
+   
+   //process JSON and extract entities we care about
+   json_strings, err := processNERJson(output)   
+   if err != nil {
+      return 
+   }
    for _, v := range json_strings {
-      nermap, err := processJSON(v)
-      if err != nil {
-         continue
-      }
-      ner := getNERKeys(nermap, &mdkeys, NER_PATTERN_TYPE) 
-      if ner {
-         for _, v := range ALL_ENTITIES {
-            if nermap[NER_PATTERN_TYPE] == v {
-               all_ner_values = ExtendJSONSlice(all_ner_values, nermap)
-               break
-            } else {
-               //we can take a look at what other values NER has picked up
+      if getNERKeys(v, &mdkeys, NER_PATTERN_TYPE) {
+         for _, all := range ALL_ENTITIES {
+            if v[NER_PATTERN_TYPE].(string) == all {
+               all_ner_values = ExtendJSONSlice(all_ner_values, v)
             }
          }
       }
    }
 } 
 
-//TODO: Fix this function as there's a host of careless JSON handling going on
-//some basic issues handling JSON, try again with additional end bracket
-func processJSON(v string) (map[string]interface{}, error)  {
+//JSON doesn't seem to work out of the box, so pre-process
+func processNERJson(output string) ([]map[string]interface{}, error) {
+   var wordjson []map[string]interface{}
    var nermap map[string]interface{}
-   var err error 
-   if err := json.Unmarshal([]byte(v), &nermap); err != nil {
-      if err.Error() == JSON_UNEXPECTED_END {
-         //do something
-      } else {
-         logNERError(err, v)
-         return nermap, err
+   var err error
+
+   output = fixupKnownErrors(output)
+
+   err = json.Unmarshal([]byte(output), &nermap)
+   if err != nil {
+      logStringError("Issue unmarshalling JSON: %v", err)
+      return wordjson, err
+   }
+
+   for _, n := range nermap {
+      if rec1, ok1 := n.([]interface{}); ok1 {   
+         for _, v1 := range rec1 {
+            if rec2, ok2 := v1.(map[string]interface{}); ok2 {
+               for k2, v2 := range rec2 { 
+                  if k2 == "tokens" {
+                     if rec3, ok3 := v2.([]interface{}); ok3 {
+                        for _, v3 := range rec3 {                      
+                           if rec4, ok4 := v3.(map[string]interface{}); ok4 {
+                              wordjson = ExtendJSONSlice(wordjson, rec4)
+                           }
+                        }
+                     }
+                  }
+               }
+            }
+         }
       }      
    }
-   return nermap, err  
+   return wordjson, err
 }
 
-//JSON doesn't seem to work out of the box, so pre-process
-func preProcessNERJson(output string) []string {
-   fmt.Println()
-   json_strings := strings.Split(output, "},")
-   for k, v := range json_strings {
-      last := v[len(v)-1:]
-      if last != "}" {
-         json_strings[k] = v + "}"
-      }
-   }
-   return json_strings
+//Pre-process for known errors in JSON stream
+func fixupKnownErrors(output string) string {
+   //replace null characters seen in some streams
+   out := strings.Replace(output, "\x00", " ", -1)
+   return out
 }
 
 //getNERKeys filters out only elements that have a named entity recognition
