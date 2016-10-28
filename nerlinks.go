@@ -40,4 +40,5 @@ func main() {
    findOpenConnections()
    filepath.Walk(file, readFile)
    allentityhandler()
+   responsehandler()
 }

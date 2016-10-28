@@ -1,9 +1,5 @@
 package main
 
-import (
-   "fmt"
-)
-
 //list to store the structs
 var all_list []EntityData
 
@@ -44,9 +40,6 @@ func allentityhandler() {
          categories = ExtendCategorySlice(categories, e1)
       }
    }
-   for _, b := range categories {
-      fmt.Println(b)
-   }  
 }
 
 func ExtendCategorySlice(slice []entitycat, element entitycat) []entitycat {
