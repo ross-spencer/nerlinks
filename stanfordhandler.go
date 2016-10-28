@@ -1,8 +1,7 @@
 package main 
 
 import (
-   //"os"
-   //"fmt"
+   "fmt"
    "strings"
    "encoding/json"
 )
@@ -171,13 +170,10 @@ func readNERJson (output string, key string) {
 
    //value to hold the keys we extract
    var mdkeys []string
-
-   json_strings := preProcessNERJson(output)
-   
+   json_strings := preProcessNERJson(output)   
    for _, v := range json_strings {
-      var nermap map[string]interface{}
-      if err := json.Unmarshal([]byte(v), &nermap); err != nil {
-         logNERError(err, v)
+      nermap, err := processJSON(v)
+      if err != nil {
          continue
       }
       ner := getNERKeys(nermap, &mdkeys, NER_PATTERN_TYPE) 
@@ -194,22 +190,32 @@ func readNERJson (output string, key string) {
    }
 } 
 
+//TODO: Fix this function as there's a host of careless JSON handling going on
+//some basic issues handling JSON, try again with additional end bracket
+func processJSON(v string) (map[string]interface{}, error)  {
+   var nermap map[string]interface{}
+   var err error 
+   if err := json.Unmarshal([]byte(v), &nermap); err != nil {
+      if err.Error() == JSON_UNEXPECTED_END {
+         //do something
+      } else {
+         logNERError(err, v)
+         return nermap, err
+      }      
+   }
+   return nermap, err  
+}
+
 //JSON doesn't seem to work out of the box, so pre-process
 func preProcessNERJson(output string) []string {
-   //TODO: improve this to be more precise...
-   trimmed := strings.Replace(output, "{\"sentences\":[", "", 1)
-   trimmed = strings.Replace(trimmed, "]}]}", "", 1)
-
-   //we can get multiple JSON sets from Stanford NER
-   json_strings := strings.Split(trimmed, "},")
-
+   fmt.Println()
+   json_strings := strings.Split(output, "},")
    for k, v := range json_strings {
       last := v[len(v)-1:]
       if last != "}" {
          json_strings[k] = v + "}"
       }
    }
-
    return json_strings
 }
 
