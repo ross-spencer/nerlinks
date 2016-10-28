@@ -1,7 +1,6 @@
 package main 
 
 import (
-   "fmt"
    "strings"
    "encoding/json"
 )
@@ -69,41 +68,36 @@ func groupNERData(fname string) {
    var name1 string
    var nertype string
 
-   for k, _ := range all_ner_values {
+   var kcombine int
 
-      if k+1 < len(all_ner_values)-1 {
+   for kmain, _ := range all_ner_values {
+      if kmain < kcombine {
+         continue
+      }
+      if kmain+1 < len(all_ner_values)-1 {
          value = ""
          nertype = ""
          combine := true
-         
-
          for combine == true {
-            val1 := all_ner_values[k][NER_CHAR_OFF_END].(float64)
-            val2 := all_ner_values[k+1][NER_CHAR_OFF_BEGIN].(float64)
-            name1 = all_ner_values[k][NER_TEXT_VALUE].(string)
-            nertype = all_ner_values[k][NER_PATTERN_TYPE].(string)
-           //name2 := all_ner_values[k+1][NER_TEXT_VALUE].(string)
-
+            val1 := all_ner_values[kmain][NER_CHAR_OFF_END].(float64)
+            val2 := all_ner_values[kmain+1][NER_CHAR_OFF_BEGIN].(float64)
+            name1 = all_ner_values[kmain][NER_TEXT_VALUE].(string)
+            nertype = all_ner_values[kmain][NER_PATTERN_TYPE].(string)
             if (val1 + 1) == val2 {
-
-               idx1 := all_ner_values[k][NER_INDEX_VALUE].(float64)
-               idx2 := all_ner_values[k+1][NER_INDEX_VALUE].(float64)
+               idx1 := all_ner_values[kmain][NER_INDEX_VALUE].(float64)
+               idx2 := all_ner_values[kmain+1][NER_INDEX_VALUE].(float64)
                indexes = ExtendFloatSlice(indexes, idx1)
                indexes = ExtendFloatSlice(indexes, idx2)
-               
-
                value = value + name1 + " "
-               
-               fmt.Println("yyy", value)
-
-               if k+1 < len(all_ner_values)-1 {                  
-                  k = k+1
+               if kmain+1 < len(all_ner_values)-1 {                  
+                  kmain = kmain+1
+                  //mechanism to enable the inner loop to increment 
+                  //the outer loop...
+                  kcombine = kmain
                } else {
                   break
                }
-
             } else {
-
                if value != "" {
                   value = value + name1
                   addEntity(nertype, value, fname)
@@ -111,15 +105,15 @@ func groupNERData(fname string) {
                } else {
                   idx := false
                   for _, v := range indexes {
-                     if all_ner_values[k][NER_INDEX_VALUE] == v {
+                     if all_ner_values[kmain][NER_INDEX_VALUE] == v {
                         idx = true
                      }
-                     if all_ner_values[k+1][NER_INDEX_VALUE] == v {
+                     if all_ner_values[kmain+1][NER_INDEX_VALUE] == v {
                         idx = true
                      }
                   }
-                  t1 := all_ner_values[k][NER_PATTERN_TYPE].(string)
-                  v1 := all_ner_values[k][NER_TEXT_VALUE].(string)
+                  t1 := all_ner_values[kmain][NER_PATTERN_TYPE].(string)
+                  v1 := all_ner_values[kmain][NER_TEXT_VALUE].(string)
                   if idx == false { 
                      addEntity(t1, v1, fname)
                   }
@@ -128,12 +122,11 @@ func groupNERData(fname string) {
             }
          }
       } else {
-         name1 = all_ner_values[k][NER_TEXT_VALUE].(string)
+         name1 = all_ner_values[kmain][NER_TEXT_VALUE].(string)
       }
    }
    if value != "" {
-      fmt.Println("ggg", value + name1, nertype)
-      addEntity(value + name1, nertype, fname)
+      addEntity(nertype, value + name1, fname)
    }
 }
 
