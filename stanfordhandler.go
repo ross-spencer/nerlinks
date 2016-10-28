@@ -172,24 +172,12 @@ func readNERJson (output string, key string) {
    //value to hold the keys we extract
    var mdkeys []string
 
-   //TODO: improve this to be more precise...
-   trimmed := strings.Replace(output, "{\"sentences\":[", "", 1)
-   trimmed = strings.Replace(trimmed, "]}]}", "", 1)
-
-   //we can get multiple JSON sets from Stanford NER
-   json_strings := strings.Split(trimmed, "},")
-   
-   for k, v := range json_strings {
-      last := v[len(v)-1:]
-      if last != "}" {
-         json_strings[k] = v + "}"
-      }
-   }
+   json_strings := preProcessNERJson(output)
    
    for _, v := range json_strings {
       var nermap map[string]interface{}
       if err := json.Unmarshal([]byte(v), &nermap); err != nil {
-         //fmt.Fprintf(os.Stderr, "Ignoring Line ERROR: Handling NER JSON: %v \"%v\"\n", err, v)
+         logNERError(err, v)
          continue
       }
       ner := getNERKeys(nermap, &mdkeys, NER_PATTERN_TYPE) 
@@ -205,6 +193,25 @@ func readNERJson (output string, key string) {
       }
    }
 } 
+
+//JSON doesn't seem to work out of the box, so pre-process
+func preProcessNERJson(output string) []string {
+   //TODO: improve this to be more precise...
+   trimmed := strings.Replace(output, "{\"sentences\":[", "", 1)
+   trimmed = strings.Replace(trimmed, "]}]}", "", 1)
+
+   //we can get multiple JSON sets from Stanford NER
+   json_strings := strings.Split(trimmed, "},")
+
+   for k, v := range json_strings {
+      last := v[len(v)-1:]
+      if last != "}" {
+         json_strings[k] = v + "}"
+      }
+   }
+
+   return json_strings
+}
 
 //getNERKeys filters out only elements that have a named entity recognition
 //elment associated with it for utilisation within the tool.

@@ -1,14 +1,12 @@
 package main
 
-import (
-   "fmt"
-)
+import "fmt"
 
 //list to store the structs
 var all_list []EntityData
 
 func collateEntities(edat []EntityData) {
-   fmt.Println("Collating statistics.", len(edat))
+   logIntMessage("Collating %d statistics.", len(edat))
    for _, v := range edat {
       all_list = ExtendEntitySlice(all_list, v)
    }
