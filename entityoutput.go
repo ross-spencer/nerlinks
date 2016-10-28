@@ -4,9 +4,10 @@ package main
 var all_list []EntityData
 
 type entitycat struct {
-   etype string
-   evalue string
-   ecount int
+   index    int
+   etype    string
+   evalue   string
+   ecount   int
 }
 
 var categories []entitycat
@@ -19,6 +20,7 @@ func collateEntities(edat []EntityData) {
 }
 
 func allentityhandler() {
+   index := 0
    for _, v1 := range all_list {
       loop := true
       var e1 entitycat
@@ -30,6 +32,8 @@ func allentityhandler() {
          }
       }
       if loop == true {
+         index = index + 1
+         e1.index = index
          e1.etype = v1.etype
          e1.evalue = v1.evalue
          for _, v2 := range all_list {
