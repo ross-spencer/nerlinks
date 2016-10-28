@@ -69,22 +69,24 @@ func groupNERData(fname string) {
          combine := true
          var value string
          var nertype string
+
+
+
          for combine == true {
             val1 := all_ner_values[k][NER_CHAR_OFF_END].(float64)
             val2 := all_ner_values[k+1][NER_CHAR_OFF_BEGIN].(float64)
-
-            
+            name1 := all_ner_values[k][NER_TEXT_VALUE].(string)
+           //name2 := all_ner_values[k+1][NER_TEXT_VALUE].(string)
 
             if (val1 + 1) == val2 {
-               name1 := all_ner_values[k][NER_TEXT_VALUE].(string)
-               name2 := all_ner_values[k+1][NER_TEXT_VALUE].(string)
                idx1 := all_ner_values[k][NER_INDEX_VALUE].(float64)
                idx2 := all_ner_values[k+1][NER_INDEX_VALUE].(float64)
                indexes = ExtendFloatSlice(indexes, idx1)
                indexes = ExtendFloatSlice(indexes, idx2)
-               value = value + name1 + " " + name2
                nertype = all_ner_values[k][NER_PATTERN_TYPE].(string)
 
+               value = value + name1 + " "
+               
                if k+1 < len(all_ner_values)-1 {                  
                   k = k+1
                } else {
@@ -92,8 +94,11 @@ func groupNERData(fname string) {
                }
 
             } else {
+
                if value != "" {
+                  value = value + name1
                   addEntity(nertype, value, fname)
+                  value = ""
                   break
                } else {
                   idx := false
