@@ -29,7 +29,7 @@ func allentityhandler() {
       if len(categories) > 0 {
          //if we've got the value we don't need to add it again
          for _, c := range categories {
-            if catcompare(c, e1) {
+            if entitycompare(c, v1) {
                loop = false
             }
          }
@@ -46,11 +46,7 @@ func allentityhandler() {
          }
          categories = ExtendCategorySlice(categories, e1)
       }
-   }
-}
-
-func catcompare(v1 entitycat, v2 entitycat) bool {
-   return valuetypecompare(v1.evalue, v2.evalue, v1.etype, v2.etype)
+   }   
 }
 
 func entitycompare(v1 entitycat, v2 EntityData) bool {
@@ -78,4 +74,11 @@ func ExtendCategorySlice(slice []entitycat, element entitycat) []entitycat {
    slice = slice[0 : n+1]
    slice[n] = element
    return slice
+}
+
+//delete entity from the slice so we can update dynamically
+func deleteCatEntity(list []entitycat, index int) []entitycat {
+   list[index] = list[len(list)-1] 
+   list = list[:len(list)-1]
+   return list
 }
