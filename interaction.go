@@ -91,7 +91,7 @@ func checkcat(inputstr string) bool {
 
 func checkquit(inputstr string) {
    inputstr = strings.Replace(inputstr, "\n", "", -1)
-    if inputstr == "false" || inputstr == "quit" || inputstr == "q" {
+    if inputstr == "false" || inputstr == "quit" || inputstr == "q" || inputstr == "n" {
       os.Exit(0)
    }
 }

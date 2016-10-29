@@ -31,6 +31,7 @@ var ner_keys_values map[string]interface{}
 type EntityData struct {
    etype       string
    evalue      string
+   eorig       string      //original string formatting
    efile       FileData
 }
 
@@ -139,7 +140,7 @@ func addEntity (etype string, evalue string, fname string) {
    } else {
       //see if this is a duplicate and handle accordingly
       for k, v := range entity_list {
-         if etype == v.etype && evalue == v.evalue {
+         if etype == v.etype && newEvalue(evalue) == v.evalue {
             //duplicate increment count
             edata = v
             edata.efile.ecount = edata.efile.ecount + 1
@@ -153,21 +154,28 @@ func addEntity (etype string, evalue string, fname string) {
    }
 }
 
+//initialize an entity structure
+func initEntity(etype string, evalue string, fname string) EntityData {
+   var edata EntityData
+   edata.etype = etype
+   edata.evalue = newEvalue(evalue)    //TODO: should this really be here in the code or in presentation layer
+   edata.eorig = evalue
+   edata.efile.fname = fname
+   edata.efile.ecount = 1
+   return edata
+}
+
+//newEvalue is used to normalize the extracted string more...
+func newEvalue(evalue string) string {
+   emodded := strings.ToLower(evalue)
+   return strings.Title(emodded)
+}
+
 //delete entity from the slice so we can update dynamically
 func deleteEntity(list []EntityData, index int) []EntityData {
    list[index] = list[len(list)-1] 
    list = list[:len(list)-1]
    return list
-}
-
-//initialize an entity structure
-func initEntity(etype string, evalue string, fname string) EntityData {
-   var edata EntityData
-   edata.etype = etype
-   edata.evalue = evalue
-   edata.efile.fname = fname
-   edata.efile.ecount = 1
-   return edata
 }
 
 //readNERJson processes the JSON output by the Standord NER
@@ -266,6 +274,7 @@ func ExtendJSONSlice(slice []map[string]interface{}, element map[string]interfac
    return slice
 }
 
+//ExtendFloatSlice extends a slice of type Float64
 func ExtendFloatSlice(slice []float64, element float64) []float64 {
    n := len(slice)
    if n == cap(slice) {
@@ -280,6 +289,7 @@ func ExtendFloatSlice(slice []float64, element float64) []float64 {
    return slice
 }
 
+//ExtendEntitySlice extends a slice of type EntityData
 func ExtendEntitySlice(slice []EntityData, element EntityData) []EntityData {
    n := len(slice)
    if n == cap(slice) {
