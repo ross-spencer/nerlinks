@@ -28,14 +28,14 @@ func responsehandler() {
 func displaycatoptions() {
    //newline before input choices
    fmt.Println()
-   fmt.Println("Values extracted from documents (option no. value, count): \n")
+   fmt.Println("Values extracted from documents (option no. value, filecount): \n")
    cols := 3
 
    intpad := fmt.Sprintf("%d", len(strconv.Itoa(len(categories))))
    intpad = "%" + intpad + "d) "
    
    for _, x := range categories {
-      fmt.Printf(intpad + "%30s (%d)     ", x.index, x.evalue, x.ecount)
+      fmt.Printf(intpad + "%30s (%03d)   ", x.index, x.evalue, x.ecount)
       if x.index % cols == 0 {
          fmt.Print("\n")
       } 
@@ -63,14 +63,19 @@ func checkcat(inputstr string) bool {
          termout := false
          for _, y := range all_list {
             if x.evalue == y.evalue && x.etype == y.etype {
+               var padlen = 0
                if typeout == false && termout == false {
                   typeout = true
                   termout = true
                   fmt.Printf("Type:  %s\n", y.etype)
+                  if padlen < len(y.efile.fname) {
+                     padlen = len(y.efile.fname)
+                  }
                   fmt.Printf("Value: %s\n", y.evalue)
                   fmt.Println("---")
                }
-               fmt.Printf("File name: %20s     Term count: %d\n", y.efile.fname, y.efile.ecount)
+               //todo make filename output more dynamic...
+               fmt.Printf("File name: %35s     Term count: %d\n", y.efile.fname, y.efile.ecount)
                found = true
             }
          }
