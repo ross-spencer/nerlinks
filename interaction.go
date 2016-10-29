@@ -3,6 +3,7 @@ package main
 import (
    "os"
    "fmt"
+   "time"
    "bufio"
    "strings"
    "strconv"
@@ -13,10 +14,10 @@ func responsehandler() {
    var inputstr string
    for input {
       displaycatoptions()
-      reader := bufio.NewReader(os.Stdin)
-      fmt.Print("Enter Option: ")
       var cat = false
       for !cat {
+         reader := bufio.NewReader(os.Stdin)
+         fmt.Print("Enter Option: ")
          inputstr, _ := reader.ReadString('\n')
          cat = checkcat(inputstr) 
       } 
@@ -29,8 +30,12 @@ func displaycatoptions() {
    fmt.Println()
    fmt.Println("Values extracted from documents (option no. value, count): \n")
    cols := 3
+
+   intpad := fmt.Sprintf("%d", len(strconv.Itoa(len(categories))))
+   intpad = "%" + intpad + "d) "
+   
    for _, x := range categories {
-      fmt.Printf("%2d) %25s (%d)     ", x.index, x.evalue, x.ecount)
+      fmt.Printf(intpad + "%30s (%d)     ", x.index, x.evalue, x.ecount)
       if x.index % cols == 0 {
          fmt.Print("\n")
       } 
@@ -50,6 +55,7 @@ func checkcat(inputstr string) bool {
 
    found := false
 
+   start := time.Now()
    for _, x := range categories {
       if x.index == i {
          fmt.Println("\nFiles listing this term:")
@@ -77,6 +83,8 @@ func checkcat(inputstr string) bool {
    }
 
    fmt.Println("---")
+   elapsed := time.Since(start)
+   fmt.Printf("Catalogue query took %s\n", elapsed)
    fmt.Println()
    return checkyesno()
 }
@@ -89,10 +97,10 @@ func checkquit(inputstr string) {
 }
 
 func checkyesno() bool {
-   var yesno = false
+   var yes = true
    reader := bufio.NewReader(os.Stdin)
-   fmt.Print("Look for another value (y/n):")
-   for !yesno {
+   for yes {
+      fmt.Print("Look for another value (y/n): ")
       inputstr, _ := reader.ReadString('\n')
       inputstr = strings.Replace(inputstr, "\n", "", -1)
       checkquit(inputstr)
@@ -100,7 +108,8 @@ func checkyesno() bool {
          return true
       }
       if inputstr == "n" {
-         os.Exit(0)
+         yes = false
+         os.Exit(0)     //todo: send back up to main control look instead
       }
    }
    return false

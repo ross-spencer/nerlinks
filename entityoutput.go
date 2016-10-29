@@ -1,5 +1,7 @@
 package main
 
+import "strings"
+
 //list to store the structs
 var all_list []EntityData
 
@@ -25,8 +27,9 @@ func allentityhandler() {
       loop := true
       var e1 entitycat
       if len(categories) > 0 {
+         //if we've got the value we don't need to add it again
          for _, c := range categories {
-            if v1.etype == c.etype && v1.evalue == c.evalue {
+            if catcompare(c, e1) {
                loop = false
             }
          }
@@ -37,13 +40,30 @@ func allentityhandler() {
          e1.etype = v1.etype
          e1.evalue = v1.evalue
          for _, v2 := range all_list {
-            if e1.evalue == v2.evalue && e1.etype == v2.etype {
+            if (entitycompare(e1, v2)) {
                e1.ecount = e1.ecount +1
             }
          }
          categories = ExtendCategorySlice(categories, e1)
       }
    }
+}
+
+func catcompare(v1 entitycat, v2 entitycat) bool {
+   return valuetypecompare(v1.evalue, v2.evalue, v1.etype, v2.etype)
+}
+
+func entitycompare(v1 entitycat, v2 EntityData) bool {
+   return valuetypecompare(v1.evalue, v2.evalue, v1.etype, v2.etype)
+}
+
+func valuetypecompare(value1 string, value2 string, type1 string, type2 string) bool {
+   value1 = strings.ToLower(value1)
+   value2 = strings.ToLower(value2)
+   if value1 == value2 && type1 == type2 {
+      return true
+   }
+   return false
 }
 
 func ExtendCategorySlice(slice []entitycat, element entitycat) []entitycat {
