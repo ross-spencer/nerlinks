@@ -35,7 +35,7 @@ func displaycatoptions() {
    intpad = "%" + intpad + "d) "
    
    for _, x := range categories {
-      fmt.Printf(intpad + "%30s (%03d)   ", x.index, x.evalue, x.ecount)
+      fmt.Printf(intpad + "%30s c.(%3d)   ", x.index, x.evalue, x.ecount)
       if x.index % cols == 0 {
          fmt.Print("\n")
       } 
@@ -75,7 +75,7 @@ func checkcat(inputstr string) bool {
                   fmt.Println("---")
                }
                //todo make filename output more dynamic...
-               fmt.Printf("File name: %35s     Term count: %d\n", y.efile.fname, y.efile.ecount)
+               fmt.Printf("File name: %45s   Term count: %d\n", y.efile.fname, y.efile.ecount)
                found = true
             }
          }
