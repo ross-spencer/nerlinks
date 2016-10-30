@@ -70,34 +70,6 @@ func getFileContent(fi filedata, ch chan contenterror) {
    }
 }
 
-func _getFileContent(fp *os.File, fi os.FileInfo) (string, error) {
-
-   /*   fp := openFile(path)
-   logFileMessage("INFO: '%s' being processed.", fi.Name())
-   content, err := getFileContent(fp, fi)
-   if err != nil {
-      logFileMessage("INFO: '%s' cannot be handled by Tika.", fi.Name())
-   } else {
-   }*/
-
-   logFileMessage("INFO: '%s' being processed.", fi.Name())
-
-   /*
-   err := getTikaRecursive(fi.Name(), fp, ACCEPT_MIME_JSON)
-   if err != nil {
-      return "", err
-   }
-   content := ""
-   if val, ok := fl_recursive_keys_values[TIKA_PLAIN_TEXT]; ok {
-      content = val.(string)
-   } else {
-      return "", fmt.Errorf("No plain text data to analyse via NER")
-   }*/
-
-   //return content, nil
-   return "", nil
-}
-
 func getEntityData(content string, fname string) []EntityData {
    return getNERData(content, fname)
 }
