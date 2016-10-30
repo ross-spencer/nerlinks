@@ -7,36 +7,16 @@ import (
 	"encoding/json"
 )
 
-//fl: denotes file level metadata keys
-var fl_available_md_keys []string
-var fl_keys_values map[string]interface{}
+func getTikaRecursive (fname string, fp *os.File, accepttype string) ([]string, map[string]interface{}, error) {
 
-var fl_recursive_md_keys []string
-var fl_recursive_keys_values map[string]interface{}
+   var fl_recursive_md_keys []string
+   var fl_recursive_keys_values map[string]interface{}
 
-func getTikaId (fp *os.File) {
-   resp := makeConnection(PUT, tika_path_detect, fp, "")
-	fmt.Fprintln(os.Stdout, "RESPONSE:", resp)
-}
-
-func getTikaMetadataPUT (fp *os.File, accepttype string) string {
-   fp.Seek(0,0)
-   resp := makeConnection(PUT, tika_path_meta, fp, accepttype)
-	return resp
-}
-
-func getTikaMetadataPOST (fname string, fp *os.File, accepttype string) {
-   fp.Seek(0,0)
-   resp := makeMultipartConnection(POST, tika_path_meta_form, fp, fname, accepttype)
-   readTikaMetadataJson(resp, "", &fl_keys_values, &fl_available_md_keys)
-}
-
-func getTikaRecursive (fname string, fp *os.File, accepttype string) error {
    fp.Seek(0,0)
    resp := makeMultipartConnection(POST, tika_path_meta_recursive, fp, fname, accepttype) 
    trimmed := strings.Trim(resp, "[ ]")
    err := readTikaMetadataJson(trimmed, "", &fl_recursive_keys_values, &fl_recursive_md_keys)
-   return err
+   return fl_recursive_md_keys, fl_recursive_keys_values, err
 }
 
 func readTikaMetadataJson (output string, key string, kv *map[string]interface{}, mdkeys *[]string) error {
