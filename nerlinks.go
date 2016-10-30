@@ -26,12 +26,25 @@ func openFile (path string) *os.File {
 }
 
 func processall(file string) {
+   //check the services are up and running
    findOpenConnections()
+
+   //time how long it takes to prcess files and extract entities
    start := time.Now()
+
+   //read each file into each server and collect results
+   //slow, works on server requests
    filepath.Walk(file, readFile)
-   allentityhandler()
+
+   //output that time...
    elapsed := time.Since(start)
    fmt.Printf("\nNamed entity analysis took %s\n", elapsed)
+
+   //collect all reaults together to enable interaction
+   //fast, works on slices
+   allentityhandler()
+
+   //user interaction...
    responsehandler()
 }
 
