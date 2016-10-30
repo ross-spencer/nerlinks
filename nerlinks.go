@@ -25,6 +25,16 @@ func openFile (path string) *os.File {
    return fp
 }
 
+func processall(file string) {
+   findOpenConnections()
+   start := time.Now()
+   filepath.Walk(file, readFile)
+   allentityhandler()
+   elapsed := time.Since(start)
+   fmt.Printf("\nNamed entity analysis took %s\n", elapsed)
+   responsehandler()
+}
+
 func main() {
    flag.Parse()
    if flag.NFlag() <= 0 {    // can access args w/ len(os.Args[1:]) too
@@ -38,12 +48,5 @@ func main() {
       fmt.Fprintln(os.Stdout, getVersion())
       os.Exit(1)
    }
-
-   findOpenConnections()
-   start := time.Now()
-   filepath.Walk(file, readFile)
-   allentityhandler()
-   elapsed := time.Since(start)
-   fmt.Printf("\nNamed entity analysis took %s\n", elapsed)
-   responsehandler()
+   processall(file)
 }
