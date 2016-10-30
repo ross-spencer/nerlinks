@@ -59,10 +59,10 @@ func processall(file string) {
 
    //collect all reaults together to enable interaction
    //fast, works on slices
-   //allentityhandler()
+   allentityhandler()
 
    //user interaction...
-   //responsehandler()
+   responsehandler()
 }
 
 func main() {

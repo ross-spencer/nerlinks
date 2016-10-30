@@ -22,10 +22,10 @@ func extractAndAnalyse(filepool []filedata) (bool, error) {
       if ce.err != nil {
          logFileMessage("INFO: '%s' cannot be handled by Tika.", fi.fname)
       } else {
-         //fmt.Println("", ce.content)
+         edat := getEntityData(ce.content, fi.fname) 
+         go collateEntities(edat)         
       }
    }
-
    return false, nil
 }
 
@@ -78,8 +78,6 @@ func _getFileContent(fp *os.File, fi os.FileInfo) (string, error) {
    if err != nil {
       logFileMessage("INFO: '%s' cannot be handled by Tika.", fi.Name())
    } else {
-      edat := getEntityData(content, fi.Name()) 
-      collateEntities(edat)         
    }*/
 
    logFileMessage("INFO: '%s' being processed.", fi.Name())
