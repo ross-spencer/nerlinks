@@ -11,21 +11,61 @@ import (
 
 func responsehandler() {
    var input = true
-   var inputstr string
+   displaycategories()
    for input {
-      displaycatoptions()
-      var cat = false
-      for !cat {
-         reader := bufio.NewReader(os.Stdin)
-         fmt.Print("Enter Option: ")
-         inputstr, _ := reader.ReadString('\n')
-         cat = checkcat(inputstr) 
-      } 
-      checkquit(inputstr)
+      val, etype := checktype()
+      if val == true {
+         input = false
+         displayvalues(etype)
+         for val {
+            more := checkvalue()
+            if more == true {
+               val = false
+               responsehandler()  
+            }
+         }
+      }
    }
 }
 
-func displaycatoptions() {
+func displaycategories() {
+   fmt.Println()
+   fmt.Println("Please choose an entity category (category, count): \n")
+   for k, x := range ALL_ENTITIES {
+      count := 0
+      for _, y := range categories {
+         if x == y.etype {
+            count = count + 1
+         }
+      }  
+      fmt.Printf("%d) %s: %d\n", k, x, count)
+   }
+}
+
+func checktype() (bool, string) {
+   var input = true
+   for input {
+
+      reader := bufio.NewReader(os.Stdin)
+      fmt.Print("\nEnter Option: ")
+      inputstr, _ := reader.ReadString('\n')
+
+      checkquit(inputstr) 
+      //else...
+      inputstr = strings.Replace(inputstr, "\n", "", -1)
+      i, _ := strconv.Atoi(inputstr)
+      if i < len(ALL_ENTITIES) {
+         input = false
+         return true, ALL_ENTITIES[i]
+      } else {
+         fmt.Print("\nOption not found. Please try again.")
+         checktype()
+      }
+   }
+   return false, ""
+}
+
+func displayvalues(etype string) {
    //newline before input choices
    fmt.Println()
    fmt.Println("Values extracted from documents (option no. value, filecount): \n")
@@ -35,62 +75,71 @@ func displaycatoptions() {
    intpad = "%" + intpad + "d) "
    
    for _, x := range categories {
-      fmt.Printf(intpad + "%30s c.(%3d)   ", x.index, x.evalue, x.ecount)
-      if x.index % cols == 0 {
-         fmt.Print("\n")
-      } 
+      if x.etype == etype {
+         fmt.Printf(intpad + "%30s c.(%3d)   ", x.index, x.evalue, x.ecount)
+         if x.index % cols == 0 {
+            fmt.Print("\n")
+         } 
+      }
    }
    //two newline before new input
    fmt.Println("\n")
 }
 
-func checkcat(inputstr string) bool {
-   checkquit(inputstr) 
-   //else...
-   inputstr = strings.Replace(inputstr, "\n", "", -1)
-   i, err := strconv.Atoi(inputstr)
-   if err != nil {
-      return false
-   }
+func checkvalue() bool {
 
-   found := false
+   var input = true
+   for input {
 
-   start := time.Now()
-   for _, x := range categories {
-      if x.index == i {
-         fmt.Println("\nFiles listing this term:")
-         typeout := false
-         termout := false
-         for _, y := range all_list {
-            if x.evalue == y.evalue && x.etype == y.etype {
-               var padlen = 0
-               if typeout == false && termout == false {
-                  typeout = true
-                  termout = true
-                  fmt.Printf("Type:  %s\n", y.etype)
-                  if padlen < len(y.efile.fname) {
-                     padlen = len(y.efile.fname)
+      reader := bufio.NewReader(os.Stdin)
+      fmt.Print("\nEnter Option: ")
+      inputstr, _ := reader.ReadString('\n')
+
+      checkquit(inputstr) 
+      //else...
+      inputstr = strings.Replace(inputstr, "\n", "", -1)
+      i, _ := strconv.Atoi(inputstr)
+
+      found := false
+
+      start := time.Now()
+      for _, x := range categories {
+         if x.index == i {
+            fmt.Println("\nFiles listing this term:")
+            typeout := false
+            termout := false
+            for _, y := range all_list {
+               if x.evalue == y.evalue && x.etype == y.etype {
+                  var padlen = 0
+                  if typeout == false && termout == false {
+                     typeout = true
+                     termout = true
+                     fmt.Printf("Type:  %s\n", y.etype)
+                     if padlen < len(y.efile.fname) {
+                        padlen = len(y.efile.fname)
+                     }
+                     fmt.Printf("Value: %s\n", y.evalue)
+                     fmt.Println("---")
                   }
-                  fmt.Printf("Value: %s\n", y.evalue)
-                  fmt.Println("---")
+                  //todo make filename output more dynamic...
+                  fmt.Printf("File name: %45s   Term count: %d\n", y.efile.fname, y.efile.ecount)
+                  found = true
                }
-               //todo make filename output more dynamic...
-               fmt.Printf("File name: %45s   Term count: %d\n", y.efile.fname, y.efile.ecount)
-               found = true
             }
          }
       }
-   }
 
-   if !found {
-      fmt.Print("Option not found, enter another option:")
-      return false
-   }
+      if !found {
+         fmt.Print("Option not found, enter another option.\n")
+         checkvalue()
+      }
 
-   fmt.Println("---")
-   elapsed := time.Since(start)
-   fmt.Printf("Catalogue query took %s\n", elapsed)
-   fmt.Println()
+      fmt.Println("---")
+      elapsed := time.Since(start)
+      fmt.Printf("Catalogue query took %s\n", elapsed)
+      fmt.Println()
+      input = false
+   }
    return checkyesno()
 }
 
