@@ -47,11 +47,12 @@ func checktype() (bool, string) {
    for input {
 
       reader := bufio.NewReader(os.Stdin)
-      fmt.Print("\nEnter Option: ")
+      fmt.Print("\nPlease enter entity category value: ")
       inputstr, _ := reader.ReadString('\n')
 
       checkquit(inputstr) 
       //else...
+      inputstr = strings.Replace(inputstr, "\r", "", -1)
       inputstr = strings.Replace(inputstr, "\n", "", -1)
       i, _ := strconv.Atoi(inputstr)
       if i < len(ALL_ENTITIES) {
@@ -97,6 +98,7 @@ func checkvalue() bool {
 
       checkquit(inputstr) 
       //else...
+      inputstr = strings.Replace(inputstr, "\r", "", -1)
       inputstr = strings.Replace(inputstr, "\n", "", -1)
       i, _ := strconv.Atoi(inputstr)
 
@@ -144,7 +146,10 @@ func checkvalue() bool {
 }
 
 func checkquit(inputstr string) {
+   fmt.Println("quit")
    inputstr = strings.Replace(inputstr, "\n", "", -1)
+   inputstr = strings.Replace(inputstr, "\r", "", -1)   
+   fmt.Println(inputstr)
     if inputstr == "false" || inputstr == "quit" || inputstr == "q" || inputstr == "n" {
       os.Exit(0)
    }
@@ -157,6 +162,7 @@ func checkyesno() bool {
       fmt.Print("Look for another value (y/n): ")
       inputstr, _ := reader.ReadString('\n')
       inputstr = strings.Replace(inputstr, "\n", "", -1)
+      inputstr = strings.Replace(inputstr, "\r", "", -1)
       checkquit(inputstr)
       if inputstr == "y" {
          return true
