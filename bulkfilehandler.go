@@ -12,6 +12,8 @@ type contenterror struct {
 
 func extractAndAnalyse(filepool []filedata) (bool, error) {
    
+   var tmp_list []EntityData
+
    ch := make(chan contenterror)
    for _, fi := range filepool {
       go getFileContent(fi, ch)
@@ -23,9 +25,11 @@ func extractAndAnalyse(filepool []filedata) (bool, error) {
          logFileMessage("INFO: '%s' cannot be handled by Tika.", fi.fname)
       } else {
          edat := getEntityData(ce.content, fi.fname) 
-         collateEntities(edat)         
+         tmp := collateEntities(edat)        
+         tmp_list = append(tmp_list, tmp...)          
       }
    }
+   all_list = append(all_list, tmp_list...)
    return false, nil
 }
 

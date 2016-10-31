@@ -15,12 +15,14 @@ type entitycat struct {
 
 var categories []entitycat
 
-func collateEntities(edat []EntityData) {
+func collateEntities(edat []EntityData) []EntityData {
+
+   var tmp_list []EntityData
    logIntMessage("Collating %d statistics.", len(edat))
    for _, v := range edat {
-      all_list = ExtendEntitySlice(all_list, v)
-      fmt.Println(len(all_list))
+      tmp_list = ExtendEntitySlice(tmp_list, v)
    }
+   return tmp_list
 }
 
 func allentityhandler() {
