@@ -38,7 +38,7 @@ func displaycategories() {
             count = count + 1
          }
       }  
-      fmt.Printf("%d) %s: %d\r\n", k, x, count)
+      fmt.Printf("%d) %s: %d\r\n", k+1, x, count)
    }
 }
 
@@ -55,6 +55,10 @@ func checktype() (bool, string) {
       inputstr = strings.Replace(inputstr, "\r", "", -1)
       inputstr = strings.Replace(inputstr, "\n", "", -1)
       i, _ := strconv.Atoi(inputstr)
+
+      //fix skew introduced for display purposes...
+      i = i-1 
+      
       if i < len(ALL_ENTITIES) {
          input = false
          return true, ALL_ENTITIES[i]
