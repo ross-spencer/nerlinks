@@ -8,27 +8,31 @@ import (
 type contenterror struct {
    content string
    err error
+   fname string
 }  
 
 func extractAndAnalyse(filepool []filedata) (bool, error) {
    
+   //create a temporary list to buffer results coming out of NER...
    var tmp_list []EntityData
 
+   //make channel run goroutine...
    ch := make(chan contenterror)
    for _, fi := range filepool {
       go getFileContent(fi, ch)
    }
-
-   for _, fi := range filepool{
+   for range filepool{
       ce := <- ch
       if ce.err != nil {
-         logFileMessage("INFO: '%s' cannot be handled by Tika.", fi.fname)
+         logFileMessage("INFO: '%s' cannot be handled by Tika.", ce.fname)
       } else {
-         edat := getEntityData(ce.content, fi.fname) 
+         edat := getEntityData(ce.content, ce.fname) 
          tmp := collateEntities(edat)        
+         //store our tmp value in the tmp_list...
          tmp_list = append(tmp_list, tmp...)          
       }
    }
+   //once computations are complete add to all_list for global scope...
    all_list = append(all_list, tmp_list...)
    return false, nil
 }
@@ -42,7 +46,9 @@ func openFile (path string) (*os.File, error) {
 }
 
 func getFileContent(fi filedata, ch chan contenterror) {
+   //create empty struct to return...
    var ce contenterror
+   ce.fname = fi.fname
 
    //what are we doing..?
    logFileMessage("INFO: '%s' being processed.", fi.fname)
