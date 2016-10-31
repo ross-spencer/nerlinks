@@ -30,7 +30,7 @@ func responsehandler() {
 
 func displaycategories() {
    fmt.Println()
-   fmt.Println("Please choose an entity category (category, count): \n")
+   fmt.Println("Please choose an entity category (category, count): \r\n")
    for k, x := range ALL_ENTITIES {
       count := 0
       for _, y := range categories {
@@ -38,7 +38,7 @@ func displaycategories() {
             count = count + 1
          }
       }  
-      fmt.Printf("%d) %s: %d\n", k, x, count)
+      fmt.Printf("%d) %s: %d\r\n", k, x, count)
    }
 }
 
@@ -47,7 +47,7 @@ func checktype() (bool, string) {
    for input {
 
       reader := bufio.NewReader(os.Stdin)
-      fmt.Print("\nPlease enter entity category value: ")
+      fmt.Print("\r\nPlease enter entity category value: ")
       inputstr, _ := reader.ReadString('\n')
 
       checkquit(inputstr) 
@@ -59,7 +59,7 @@ func checktype() (bool, string) {
          input = false
          return true, ALL_ENTITIES[i]
       } else {
-         fmt.Print("\nOption not found. Please try again.")
+         fmt.Print("\r\nOption not found. Please try again.")
          checktype()
       }
    }
@@ -69,22 +69,25 @@ func checktype() (bool, string) {
 func displayvalues(etype string) {
    //newline before input choices
    fmt.Println()
-   fmt.Println("Values extracted from documents (option no. value, filecount): \n")
+   fmt.Println("Values extracted from documents (option no. value, filecount): \r\n")
    cols := 3
 
    intpad := fmt.Sprintf("%d", len(strconv.Itoa(len(categories))))
-   intpad = "%" + intpad + "d) "
+   intpad = "%" + intpad + "|d) "
    
+   colcount := 0
    for _, x := range categories {
       if x.etype == etype {
-         fmt.Printf(intpad + "%30s c.(%3d)   ", x.index, x.evalue, x.ecount)
-         if x.index % cols == 0 {
-            fmt.Print("\n")
+         colcount = colcount + 1
+         fmt.Printf(intpad + "%30s c.[%3d]   ", x.index, x.evalue, x.ecount)
+         if colcount >= cols {
+            colcount = 0
+            fmt.Print("\r\n")
          } 
       }
    }
    //two newline before new input
-   fmt.Println("\n")
+   fmt.Println("\r\n")
 }
 
 func checkvalue() bool {
@@ -93,7 +96,7 @@ func checkvalue() bool {
    for input {
 
       reader := bufio.NewReader(os.Stdin)
-      fmt.Print("\nEnter Option: ")
+      fmt.Print("\r\nEnter Option: ")
       inputstr, _ := reader.ReadString('\n')
 
       checkquit(inputstr) 
@@ -107,7 +110,7 @@ func checkvalue() bool {
       start := time.Now()
       for _, x := range categories {
          if x.index == i {
-            fmt.Println("\nFiles listing this term:")
+            fmt.Println("\r\nFiles listing this term:")
             typeout := false
             termout := false
             for _, y := range all_list {
@@ -116,15 +119,15 @@ func checkvalue() bool {
                   if typeout == false && termout == false {
                      typeout = true
                      termout = true
-                     fmt.Printf("Type:  %s\n", y.etype)
+                     fmt.Printf("Type:  %s\r\n", y.etype)
                      if padlen < len(y.efile.fname) {
                         padlen = len(y.efile.fname)
                      }
-                     fmt.Printf("Value: %s\n", y.evalue)
+                     fmt.Printf("Value: %s\r\n", y.evalue)
                      fmt.Println("---")
                   }
                   //todo make filename output more dynamic...
-                  fmt.Printf("File name: %45s   Term count: %d\n", y.efile.fname, y.efile.ecount)
+                  fmt.Printf("File name: %45s   Term count: %d\r\n", y.efile.fname, y.efile.ecount)
                   found = true
                }
             }
@@ -132,13 +135,13 @@ func checkvalue() bool {
       }
 
       if !found {
-         fmt.Print("Option not found, enter another option.\n")
+         fmt.Print("Option not found, enter another option.\r\n")
          checkvalue()
       }
 
       fmt.Println("---")
       elapsed := time.Since(start)
-      fmt.Printf("Catalogue query took %s\n", elapsed)
+      fmt.Printf("Catalogue query took %s\r\n", elapsed)
       fmt.Println()
       input = false
    }
@@ -146,7 +149,6 @@ func checkvalue() bool {
 }
 
 func checkquit(inputstr string) {
-   fmt.Println("quit")
    inputstr = strings.Replace(inputstr, "\n", "", -1)
    inputstr = strings.Replace(inputstr, "\r", "", -1)   
    fmt.Println(inputstr)
