@@ -23,10 +23,6 @@ const NER_CHAR_OFF_BEGIN = "characterOffsetBegin"
 const NER_TEXT_VALUE = "originalText"
 const NER_INDEX_VALUE = "index"
 
-//interfaces to store JSON results
-var all_ner_values []map[string]interface{}
-var ner_keys_values map[string]interface{}
-
 //struct to return to other classes
 type EntityData struct {
    etype       string
@@ -40,18 +36,24 @@ type FileData struct {
    ecount int
 }
 
-//list to store the structs
-var entity_list []EntityData
-
 //getNERData is used to build the data we're going to use per
 //file given the system. 
 func getNERData (content string, fname string) []EntityData {
-   entity_list = nil
-   all_ner_values = nil
-   preprocessed := nerPreprocess(content)
-   resp := makeNERDataConnection(POST, ner_extract, preprocessed)
-   readNERJson(resp, "")
-   groupNERData(fname)
+
+   //preprocess content if need be
+   preprocess := nerPreprocess(content)
+
+   //qurery server
+   resp := makeNERDataConnection(POST, ner_extract, preprocess)   
+
+   //interfaces to store JSON results
+   //per function call when used in goroutine
+   var all_ner_values []map[string]interface{}
+
+   //process the output...
+   all_ner_values = readNERJson(resp, all_ner_values)
+   entity_list := groupNERData(all_ner_values, fname)
+
    return entity_list
 }
 
@@ -62,8 +64,33 @@ func nerPreprocess (content string) string {
    return strings.Replace(content, "\n", ", ", -1)  //TODO: improve handling further down code
 }
 
+//readNERJson processes the JSON output by the Standord NER
+//extractor. 
+func readNERJson (output string, all_ner_values []map[string]interface{}) []map[string]interface{} {
+   //value to hold the keys we extract
+   var mdkeys []string
+   
+   //process JSON and extract entities we care about
+   json_strings, err := processNERJson(output)   
+   if err != nil {
+      return nil
+   }
+   for _, v := range json_strings {
+      if getNERKeys(v, &mdkeys, NER_PATTERN_TYPE) {
+         for _, all := range ALL_ENTITIES {
+            if v[NER_PATTERN_TYPE].(string) == all {
+               all_ner_values = ExtendJSONSlice(all_ner_values, v)
+            }
+         }
+      }
+   }
+
+   return all_ner_values
+} 
+
 //group NER data for faceting... 
-func groupNERData(fname string) {
+func groupNERData(all_ner_values []map[string]interface{}, fname string) []EntityData {
+   var entity_list []EntityData
    var indexes []float64
    var value string
    var name1 string
@@ -101,7 +128,7 @@ func groupNERData(fname string) {
             } else {
                if value != "" {
                   value = value + name1
-                  addEntity(nertype, value, fname)
+                  entity_list = addEntity(entity_list, nertype, value, fname)
                   break
                } else {
                   idx := false
@@ -116,7 +143,7 @@ func groupNERData(fname string) {
                   t1 := all_ner_values[kmain][NER_PATTERN_TYPE].(string)
                   v1 := all_ner_values[kmain][NER_TEXT_VALUE].(string)
                   if idx == false { 
-                     addEntity(t1, v1, fname)
+                     entity_list = addEntity(entity_list, t1, v1, fname)
                   }
                }
                combine = false
@@ -127,16 +154,16 @@ func groupNERData(fname string) {
       }
    }
    if value != "" {
-      addEntity(nertype, value + name1, fname)
+      entity_list = addEntity(entity_list, nertype, value + name1, fname)
    }
+   return entity_list
 }
 
 //add entity to global entity list as we require
-func addEntity (etype string, evalue string, fname string) {
+func addEntity (entity_list []EntityData, etype string, evalue string, fname string) []EntityData {
    edata := initEntity(etype, evalue, fname)
    if len(entity_list) == 0 {
-      entity_list = ExtendEntitySlice(entity_list, edata)
-      return 
+      return ExtendEntitySlice(entity_list, edata)
    } else {
       //see if this is a duplicate and handle accordingly
       for k, v := range entity_list {
@@ -145,12 +172,10 @@ func addEntity (etype string, evalue string, fname string) {
             edata = v
             edata.efile.ecount = edata.efile.ecount + 1
             entity_list = deleteEntity(entity_list, k)
-            entity_list = ExtendEntitySlice(entity_list, edata)
-            return
+            return ExtendEntitySlice(entity_list, edata)
          } 
       }
-      entity_list = ExtendEntitySlice(entity_list, edata) 
-      return 
+      return ExtendEntitySlice(entity_list, edata) 
    }
 }
 
@@ -177,28 +202,6 @@ func deleteEntity(list []EntityData, index int) []EntityData {
    list = list[:len(list)-1]
    return list
 }
-
-//readNERJson processes the JSON output by the Standord NER
-//extractor. 
-func readNERJson (output string, key string) {
-   //value to hold the keys we extract
-   var mdkeys []string
-   
-   //process JSON and extract entities we care about
-   json_strings, err := processNERJson(output)   
-   if err != nil {
-      return 
-   }
-   for _, v := range json_strings {
-      if getNERKeys(v, &mdkeys, NER_PATTERN_TYPE) {
-         for _, all := range ALL_ENTITIES {
-            if v[NER_PATTERN_TYPE].(string) == all {
-               all_ner_values = ExtendJSONSlice(all_ner_values, v)
-            }
-         }
-      }
-   }
-} 
 
 //JSON doesn't seem to work out of the box, so pre-process
 func processNERJson(output string) ([]map[string]interface{}, error) {

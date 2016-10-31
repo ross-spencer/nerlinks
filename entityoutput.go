@@ -1,6 +1,7 @@
 package main
 
 import "strings"
+import "fmt"
 
 //list to store the structs
 var all_list []EntityData
@@ -18,10 +19,14 @@ func collateEntities(edat []EntityData) {
    logIntMessage("Collating %d statistics.", len(edat))
    for _, v := range edat {
       all_list = ExtendEntitySlice(all_list, v)
+      fmt.Println(len(all_list))
    }
 }
 
 func allentityhandler() {
+
+   fmt.Println("xxx")
+
    index := 0
    for _, v1 := range all_list {
       loop := true

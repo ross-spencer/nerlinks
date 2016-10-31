@@ -23,7 +23,7 @@ func extractAndAnalyse(filepool []filedata) (bool, error) {
          logFileMessage("INFO: '%s' cannot be handled by Tika.", fi.fname)
       } else {
          edat := getEntityData(ce.content, fi.fname) 
-         go collateEntities(edat)         
+         collateEntities(edat)         
       }
    }
    return false, nil
