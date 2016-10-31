@@ -73,7 +73,7 @@ func displayvalues(etype string) {
    cols := 3
 
    intpad := fmt.Sprintf("%d", len(strconv.Itoa(len(categories))))
-   intpad = "%" + intpad + "|d) "
+   intpad = "(%" + intpad + "d) "
    
    colcount := 0
    for _, x := range categories {
