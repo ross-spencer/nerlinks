@@ -74,25 +74,46 @@ func displayvalues(etype string) {
    //newline before input choices
    fmt.Println()
    fmt.Println("Values extracted from documents (option no. value, filecount): \r\n")
+
    cols := 3
+   paging := (20 * cols)
 
    intpad := fmt.Sprintf("%d", len(strconv.Itoa(len(categories))))
    intpad = "(%" + intpad + "d) "
    
    colcount := 0
+   pagecount := 0
+
    for _, x := range categories {
       if x.etype == etype {
          colcount = colcount + 1
+         pagecount = pagecount + 1
          fmt.Printf(intpad + "%30s c.[%3d]   ", x.index, x.evalue, x.ecount)
          if colcount >= cols {
             colcount = 0
             fmt.Print("\r\n")
          } 
+         if pagecount == paging {
+            pagecount = checkpagecount()
+         }
       }
    }
    //two newline before new input
    fmt.Println("\r\n")
 }
+
+func checkpagecount() int {
+   var input = true
+   for input {
+      reader := bufio.NewReader(os.Stdin)
+      fmt.Print("\r\nPress enter to page: ")
+      inputstr, _ := reader.ReadString('\n')
+      checkquit(inputstr) 
+      input = false
+   }
+   return 0
+}
+
 
 func checkvalue() bool {
 
