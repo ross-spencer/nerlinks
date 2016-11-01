@@ -53,12 +53,20 @@ Some basic instructions to begin. Will be fleshed out in the coming weeks. Video
 
 Download from: [TIKA Server](https://tika.apache.org/download.html)
 
-   #Run TIKA and specify a port to operate on
-   start java -jar "tools/tika-server-1.13.jar" --port=9998
+    #Run TIKA and specify a port to operate on
+    start java -jar "tools/tika-server-1.13.jar" --port=9998
 
 ###Start Stanford NER
 
-Download from: [Stanford NER](http://nlp.stanford.edu/software/stanford-corenlp-full-2015-12-09.zip)
+Download from: [Stanford NER (Website)](http://nlp.stanford.edu/software/CRF-NER.shtml#Download)
+
+App: [Stanford NER (ZIP)](http://nlp.stanford.edu/software/stanford-corenlp-full-2015-12-09.zip)
 
     # Run the server using all jars in the current directory (e.g., the CoreNLP home directory)
     java -mx1000m -cp "*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer [port] [timeout]
+
+##License
+
+[GPL v3.0.](https://github.com/ross-spencer/nerlinks/blob/master/LICENSE.txt)
+
+Please see Tika's and Stanford's websites for their own licensing documentation. 
