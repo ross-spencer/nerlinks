@@ -11,7 +11,7 @@ This frees us up to focus on development of the capability to combine different 
 
 Using Tika we get a large number of files handled for free so we don't have to worry too much about what files are sent to the server. Send them all! - We handle the exceptions as best as possible.
 
-##Threading
+####Threading
 
 The tool uses a default of eight goroutines/threads to communicate with Tika. If you increase your memory you may be able to up the number of threads. Configured in the nerlinks.go as 'throttle'.
 
