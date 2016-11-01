@@ -44,7 +44,7 @@ func displaycategories() {
 }
 
 func checktype() (bool, string) {
-   fmt.Print("\r\nPlease enter entity category value: ")
+   fmt.Print("Please enter entity category value: ")
    reader := bufio.NewReader(os.Stdin)
    inputstr, err := reader.ReadString('\n')
    if err != nil {
@@ -113,12 +113,13 @@ func checkpagecount() int {
       checkpagecount()
    }
    checkquit(inputstr) 
+   fmt.Print("\r\n")
    return 0
 }
 
 
 func checkvalue() bool {
-   fmt.Print("\r\nEnter Option: ")
+   fmt.Print("Enter Option: ")
    reader := bufio.NewReader(os.Stdin)
    inputstr, err := reader.ReadString('\n')
    if err != nil {
