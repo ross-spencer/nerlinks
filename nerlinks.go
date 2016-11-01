@@ -11,7 +11,7 @@ import (
 var file string
 var vers bool
 
-var fthrottle = 6
+var fthrottle = 8
 
 func init() {
    flag.StringVar(&file, "file", "false", "File to extract information from.")
