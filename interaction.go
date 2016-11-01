@@ -10,22 +10,23 @@ import (
 )
 
 func responsehandler() {
-   var input = true
+
    displaycategories()
-   for input {
-      val, etype := checktype()
-      if val == true {
-         input = false
-         displayvalues(etype)
-         for val {
-            more := checkvalue()
-            if more == true {
-               val = false
-               responsehandler()  
-            }
-         }
-      }
+
+   val, etype := checktype()
+   fmt.Println("\nCategory selected:", etype)
+
+   if val == true {
+      displayvalues(etype)
+      checkvalue()
    }
+
+   if checkyesno() {
+      responsehandler()
+   } else {
+      os.Exit(0)
+   }
+
 }
 
 func displaycategories() {
@@ -37,35 +38,37 @@ func displaycategories() {
          if x == y.etype {
             count = count + 1
          }
-      }  
+      }
       fmt.Printf("%d) %s: %d\r\n", k+1, x, count)
    }
 }
 
 func checktype() (bool, string) {
-   var input = true
-   for input {
+   fmt.Print("\r\nPlease enter entity category value: ")
+   reader := bufio.NewReader(os.Stdin)
+   inputstr, err := reader.ReadString('\n')
+   if err != nil {
+      return checktype()
+   }
+   checkquit(inputstr)
 
-      reader := bufio.NewReader(os.Stdin)
-      fmt.Print("\r\nPlease enter entity category value: ")
-      inputstr, _ := reader.ReadString('\n')
+   //else...
+   inputstr = strings.Replace(inputstr, "\r", "", -1)
+   inputstr = strings.Replace(inputstr, "\n", "", -1)
 
-      checkquit(inputstr) 
-      //else...
-      inputstr = strings.Replace(inputstr, "\r", "", -1)
-      inputstr = strings.Replace(inputstr, "\n", "", -1)
-      i, _ := strconv.Atoi(inputstr)
-
+   i, err := strconv.Atoi(inputstr)
+   if err != nil {
+      return checktype()
+   } else {
       //fix skew introduced for display purposes...
-      i = i-1 
-      
-      if i < len(ALL_ENTITIES) {
-         input = false
-         return true, ALL_ENTITIES[i]
-      } else {
-         fmt.Print("\r\nOption not found. Please try again.")
-         checktype()
-      }
+      i = i-1
+   }
+         
+   if i < len(ALL_ENTITIES) {
+      return true, ALL_ENTITIES[i]
+   } else {
+      fmt.Print("\r\nOption not found. Please try again.")
+      return checktype()
    }
    return false, ""
 }
@@ -103,101 +106,102 @@ func displayvalues(etype string) {
 }
 
 func checkpagecount() int {
-   var input = true
-   for input {
-      reader := bufio.NewReader(os.Stdin)
-      fmt.Print("\r\nPress enter to page: ")
-      inputstr, _ := reader.ReadString('\n')
-      checkquit(inputstr) 
-      input = false
+   fmt.Print("\r\nPress enter to page: ")
+   reader := bufio.NewReader(os.Stdin)
+   inputstr, err := reader.ReadString('\n')
+   if err != nil {
+      checkpagecount()
    }
+   checkquit(inputstr) 
    return 0
 }
 
 
 func checkvalue() bool {
+   fmt.Print("\r\nEnter Option: ")
+   reader := bufio.NewReader(os.Stdin)
+   inputstr, err := reader.ReadString('\n')
+   if err != nil {
+      return checkvalue()
+   }
+   checkquit(inputstr) 
+   inputstr = strings.Replace(inputstr, "\r", "", -1)
+   inputstr = strings.Replace(inputstr, "\n", "", -1)
+   i, err := strconv.Atoi(inputstr)
+   if err != nil {
+      return checkvalue()
+   }      
+   res := getresult(i)
+   if res {
+      return true
+   }
+   return true
+}
 
-   var input = true
-   for input {
-
-      reader := bufio.NewReader(os.Stdin)
-      fmt.Print("\r\nEnter Option: ")
-      inputstr, _ := reader.ReadString('\n')
-
-      checkquit(inputstr) 
-      //else...
-      inputstr = strings.Replace(inputstr, "\r", "", -1)
-      inputstr = strings.Replace(inputstr, "\n", "", -1)
-      i, _ := strconv.Atoi(inputstr)
-
-      found := false
-
-      start := time.Now()
-      for _, x := range categories {
-         if x.index == i {
-            fmt.Println("\r\nFiles listing this term:")
-            typeout := false
-            termout := false
-            for _, y := range all_list {
-               if x.evalue == y.evalue && x.etype == y.etype {
-                  var padlen = 0
-                  if typeout == false && termout == false {
-                     typeout = true
-                     termout = true
-                     fmt.Printf("Type:  %s\r\n", y.etype)
-                     if padlen < len(y.efile.fname) {
-                        padlen = len(y.efile.fname)
-                     }
-                     fmt.Printf("Value: %s\r\n", y.evalue)
-                     fmt.Println("---")
+func getresult(i int) bool {
+   found := false
+   start := time.Now()
+   for _, x := range categories {
+      if x.index == i {
+         fmt.Println("\r\nFiles listing this term:")
+         typeout := false
+         termout := false
+         for _, y := range all_list {
+            if x.evalue == y.evalue && x.etype == y.etype {
+               var padlen = 0
+               if typeout == false && termout == false {
+                  typeout = true
+                  termout = true
+                  fmt.Printf("Type:  %s\r\n", y.etype)
+                  if padlen < len(y.efile.fname) {
+                     padlen = len(y.efile.fname)
                   }
-                  //todo make filename output more dynamic...
-                  fmt.Printf("File name: %45s   Term count: %d\r\n", y.efile.fname, y.efile.ecount)
-                  found = true
+                  fmt.Printf("Value: %s\r\n", y.evalue)
+                  fmt.Println("---")
                }
+               //todo make filename output more dynamic...
+               fmt.Printf("File name: %45s   Term count: %d\r\n", y.efile.fname, y.efile.ecount)
+               found = true
             }
          }
       }
+   }
 
-      if !found {
-         fmt.Print("Option not found, enter another option.\r\n")
-         checkvalue()
-      }
-
+   if !found {
+      fmt.Print("Entity entry not found, enter another option.\r\n")
+      return false
+   } else {
       fmt.Println("---")
       elapsed := time.Since(start)
       fmt.Printf("Catalogue query took %s\r\n", elapsed)
       fmt.Println()
-      input = false
    }
-   return checkyesno()
+   return true
 }
 
 func checkquit(inputstr string) {
    inputstr = strings.Replace(inputstr, "\n", "", -1)
    inputstr = strings.Replace(inputstr, "\r", "", -1)   
-   fmt.Println(inputstr)
-    if inputstr == "false" || inputstr == "quit" || inputstr == "q" || inputstr == "n" {
+   if inputstr == "false" || inputstr == "quit" || inputstr == "q" || inputstr == "n" {
       os.Exit(0)
    }
 }
 
 func checkyesno() bool {
-   var yes = true
+   fmt.Print("Look for another value (y/n): ")
    reader := bufio.NewReader(os.Stdin)
-   for yes {
-      fmt.Print("Look for another value (y/n): ")
-      inputstr, _ := reader.ReadString('\n')
-      inputstr = strings.Replace(inputstr, "\n", "", -1)
-      inputstr = strings.Replace(inputstr, "\r", "", -1)
-      checkquit(inputstr)
-      if inputstr == "y" {
-         return true
-      }
-      if inputstr == "n" {
-         yes = false
-         os.Exit(0)     //todo: send back up to main control look instead
-      }
+   inputstr, err := reader.ReadString('\n')
+   if err != nil {
+      checkyesno()
    }
-   return false
+   inputstr = strings.Replace(inputstr, "\n", "", -1)
+   inputstr = strings.Replace(inputstr, "\r", "", -1)
+   checkquit(inputstr)
+   if inputstr == "y" {
+      return true
+   }
+   if inputstr == "n" {
+      os.Exit(0)     //todo: send back up to main control look instead
+   }
+   return checkyesno()
 }
