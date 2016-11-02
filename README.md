@@ -42,6 +42,7 @@ Some nice examples for users to take a look at and share.
 Some basic instructions to begin. Will be fleshed out in the coming weeks. Video link to come. 
 
 1) Start both services (start.bat, start-tools.sh), download links below. 
+
 2) Run (cross platform)
     Linux: $./nerlinks -file <foldername>
 
@@ -54,12 +55,11 @@ Some basic instructions to begin. Will be fleshed out in the coming weeks. Video
 Download from: [TIKA Server](https://tika.apache.org/download.html)
 
     #Run TIKA and specify a port to operate on
-    start java -jar "tools/tika-server-1.13.jar" --port=9998
+    start java -mx1000m -jar "tools/tika-server-1.13.jar" --port=9998
 
 ###Start Stanford NER
 
-Download from: [Stanford NER (Website)](http://nlp.stanford.edu/software/CRF-NER.shtml#Download)
-
+Download from: [Stanford NER (Website)](http://nlp.stanford.edu/software/CRF-NER.shtml#Download)<br/>
 App: [Stanford NER (ZIP)](http://nlp.stanford.edu/software/stanford-corenlp-full-2015-12-09.zip)
 
     # Run the server using all jars in the current directory (e.g., the CoreNLP home directory)
